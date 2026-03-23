@@ -12,13 +12,21 @@ const mongoose = require("mongoose")
  
 
 const app = express();
-const MY_FRONTEND_ORIGIN = 'http://localhost:5173';
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://jbankplc.vercel.app"
+];
+
 app.use(cors({
-      origin:MY_FRONTEND_ORIGIN,
-      credentials: true,
-      methods:['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-      allowheaders: ['Content-type', 'Authorization', 'X-Requested-With']
-}))
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true
+}));
 app.use(express.urlencoded({extended: true}))
 app.use(express.json());
 app.use("/api/auth", authRoutes);
