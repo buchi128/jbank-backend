@@ -32,6 +32,9 @@ app.get("/health", (req, res) => {
     timestamp: new Date()
   });
 });
+app.get("/", (req, res) => {
+  res.send("JBank API is running 🚀");
+});
 
 
 
