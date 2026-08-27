@@ -42,10 +42,12 @@ app.use(cors({
 
 
 // Main Application Route Pipelines
-app.use("/api", authRouter);    
-app.use("/api/auth", authRouter);
+app.use("/", authRouter);          
+app.use("/api", authRouter);       
+app.use("/api/auth", authRouter); 
 
-app.use("/api/users", userRouter);
+app.use("/api/users", userRouter); 
+
 
 app.use("/api/admin", adminRouter)    
 app.use("/api/accounts", accountRouter)
