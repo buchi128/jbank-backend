@@ -21,7 +21,7 @@ app.use(express.urlencoded({ extended: true }));
 
 const allowedOrigins = [
   'http://localhost:5173', 
-   'https://jbank-backend.vercel.app' 
+    'https://jbankplc-sv7e.vercel.app' 
 ];
 
 app.use(cors({
