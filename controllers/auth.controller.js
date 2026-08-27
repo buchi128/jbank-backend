@@ -1,29 +1,37 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-
-const importedModel = require('../models/Users.model');
-const userModel = importedModel.userModel || importedModel;
+// Destructure cleanly matching your named object export mapping configuration
+const { userModel } = require('../models/Users.model');
 
 const register = async (req, res) => {
   try {
     const { firstName, lastName, fullName, email, password, phoneNumber, homeAddress } = req.body;
 
-    let finalFirstName = firstName ? firstName.toString().trim() : "";
-    let finalLastName = lastName ? lastName.toString().trim() : "";
+    let finalFirstName = "";
+    let finalLastName = "";
 
+    if (firstName) {
+      finalFirstName = firstName.toString().trim();
+    }
+    if (lastName) {
+      finalLastName = lastName.toString().trim();
+    }
+
+    // If your React form passes fullName instead, split it cleanly
     if (fullName && !finalFirstName && !finalLastName) {
       const nameParts = fullName.trim().split(" ");
       finalFirstName = nameParts[0] || "User";
       finalLastName = nameParts.slice(1).join(" ") || "Customer";
     }
 
+    // Hard fallback guarantees to satisfy Mongoose 'required: true' schema criteria
     if (!finalFirstName) finalFirstName = "User";
     if (!finalLastName) finalLastName = "Customer";
 
-    // Set fallback defaults for properties Formik doesn't send
-    const finalPhone = phoneNumber ? phoneNumber.trim() : "08000000000";
-    const finalAddress = homeAddress ? homeAddress.trim() : "Default Main Address, Nigeria";
+    // Strict default strings for the parameters your 4-field Formik form doesn't collect
+    const finalPhone = phoneNumber ? phoneNumber.toString().trim() : "08000000000";
+    const finalAddress = homeAddress ? homeAddress.toString().trim() : "Default Main Address, Nigeria";
 
     if (!email || !password) {
       return res.status(400).json({ message: 'Email and password fields are strictly required.' });
@@ -34,6 +42,7 @@ const register = async (req, res) => {
 
     const hashed = await bcrypt.hash(password, 10);
     
+    // Instantiate Mongoose document completely matching your Users.model.js field keys
     const user = new userModel({ 
       firstName: finalFirstName, 
       lastName: finalLastName, 
@@ -75,7 +84,7 @@ const login = async (req, res) => {
     const userSafe = user.toObject();
     delete userSafe.password;
 
-    return res.status(200).json({ message: 'Login successful', user: userSafe, token });
+    return res.status(200).json({ message: 'Login successful', user: userSafe, token })
   } catch (error) {
     console.error('CRITICAL LOGIN ERROR:', error);
     return res.status(500).json({ message: 'Login failed', error: error.message });
