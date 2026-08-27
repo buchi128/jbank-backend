@@ -40,21 +40,26 @@ app.use(cors({
 
 
 let isConnected = false;
+
 const connectDB = async () => {
-  if (isConnected) return;
+  if (isConnected === 1) {
+    return;
+  }
+  
   if (!process.env.DATABASE_URI) {
     console.error("CRITICAL CONFIG ERROR: DATABASE_URI is missing from Vercel settings.");
     return;
   }
+  
   try {
-    const db = await mongoose.connect(process.env.DATABASE_URI);
-    isConnected = db.connections[0].readyState;
+  
+    await mongoose.connect(process.env.DATABASE_URI);
+    isConnected = mongoose.connection.readyState; 
     console.log("DATABASE connected successfully");
   } catch (error) {
     console.error("DATABASE connection failure:", error.message);
   }
 };
-
 
 app.use(async (req, res, next) => {
   await connectDB();
