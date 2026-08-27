@@ -5,14 +5,25 @@ const { userModel } = require('../models/Users.model')
 
 const register = async (req, res) => {
   try {
-    // Structural Destructuring matching your request payloads
-    const { firstName, lastName, secondName, email, password, phoneNumber, homeAddress } = req.body
-    
-    // Normalize variant field names across your system (handles lastName vs secondName)
-    const exactLastName = lastName || secondName;
+    const { firstName, lastName, fullName, email, password, phoneNumber, homeAddress } = req.body
 
-    if (!firstName || !exactLastName || !email || !password || !phoneNumber || !homeAddress) {
-      return res.status(400).json({ message: 'Missing required fields' })
+    // 1. Resolve Name Keys (Splits fullName if sent, otherwise uses individual keys)
+    let finalFirstName = firstName;
+    let finalLastName = lastName;
+
+    if (fullName && !firstName && !lastName) {
+      const nameParts = fullName.trim().split(" ");
+      finalFirstName = nameParts[0] || "User";
+      finalLastName = nameParts.slice(1).join(" ") || "Customer";
+    }
+
+    // 2. Assign Fallback Values for Missing Student Assignment Fields
+    const finalPhone = phoneNumber || "000-000-0000";
+    const finalAddress = homeAddress || "Not Provided";
+
+    // Validation Guard: Ensure the essential parameters are present
+    if (!finalFirstName || !finalLastName || !email || !password) {
+      return res.status(400).json({ message: 'Missing required credential fields' })
     }
 
     const existing = await userModel.findOne({ email: email.toLowerCase().trim() })
@@ -20,13 +31,14 @@ const register = async (req, res) => {
 
     const hashed = await bcrypt.hash(password, 10)
     
+    // Save to your Mongoose schema cleanly with fallbacks filled
     const user = new userModel({ 
-      firstName: firstName.trim(), 
-      lastName: exactLastName.trim(), 
+      firstName: finalFirstName.trim(), 
+      lastName: finalLastName.trim(), 
       email: email.toLowerCase().trim(), 
       password: hashed, 
-      phoneNumber: phoneNumber.trim(), 
-      homeAddress: homeAddress.trim() 
+      phoneNumber: finalPhone, 
+      homeAddress: finalAddress 
     })
     
     const saved = await user.save()
@@ -39,11 +51,11 @@ const register = async (req, res) => {
 
     return res.status(201).json({ message: 'User registered successfully', user: userSafe, token })
   } catch (error) {
-    // Operational critical logging for tracking physical database schema bottlenecks
     console.error('CRITICAL REGISTRATION ERROR:', error);
     return res.status(500).json({ message: 'Registration failed', error: error.message })
   }
 }
+
 
 const login = async (req, res) => {
   try {
