@@ -1,7 +1,5 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-
-// Destructure cleanly matching your named object export mapping configuration
 const { userModel } = require('../models/Users.model');
 
 const register = async (req, res) => {
@@ -18,25 +16,22 @@ const register = async (req, res) => {
       finalLastName = lastName.toString().trim();
     }
 
-    // If your React form passes fullName instead, split it cleanly
     if (fullName && !finalFirstName && !finalLastName) {
       const nameParts = fullName.trim().split(" ");
       finalFirstName = nameParts[0] || "User";
       finalLastName = nameParts.slice(1).join(" ") || "Customer";
     }
 
-    // Hard fallback guarantees to satisfy Mongoose 'required: true' schema criteria
     if (!finalFirstName) finalFirstName = "User";
     if (!finalLastName) finalLastName = "Customer";
 
-    // Strict default strings for the parameters your 4-field Formik form doesn't collect
     const finalPhone = phoneNumber ? phoneNumber.toString().trim() : "08000000000";
     const finalAddress = homeAddress ? homeAddress.toString().trim() : "Default Main Address, Nigeria";
 
     if (!email || !password) {
       return res.status(400).json({ message: 'Email and password fields are strictly required.' });
     }
-
+     userModel.schema.set('bufferCommands', false); 
     const existing = await userModel.findOne({ email: email.toLowerCase().trim() });
     if (existing) return res.status(409).json({ message: 'Email already in use' });
 
