@@ -131,21 +131,23 @@ const createTransaction = async (req, res) => {
 };
 
 
+// 2. Fetch Active User Ledger History
 const loggedInUserTransactions = async (req, res) => {
   try {
     const userId = req.user && req.user.id;
     if (!userId) return res.status(401).json({ message: 'Unauthorized' });
 
-    const accounts = await BankAccount.find({ userId }).select('_id');
-    const accountIds = accounts.map(a => a._id);
-
     
+    const accounts = await BankAccount.find({ userId }).select('_id');
+    const accountIds = accounts.map(a => a._id); 
     const transactions = await Transaction.find({ accountId: { $in: accountIds } })
       .populate('accountId', 'accountNumber currency balance')
       .sort({ createdAt: -1 });
 
+    console.log(`LEDGER TRACE ENGINE: Fetched ${transactions.length} items successfully.`);
     return res.status(200).json({ message: 'Transactions fetched successfully', data: transactions });
   } catch (error) {
+    console.error("HISTORY API FETCH FAULT:", error.message);
     return res.status(500).json({ message: 'Could not fetch transactions list', error: error.message });
   }
 };
