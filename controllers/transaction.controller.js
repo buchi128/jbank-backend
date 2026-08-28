@@ -23,11 +23,9 @@ const createTransaction = async (req, res) => {
     let resultTxn = null;
     await session.withTransaction(async () => {
       
-    
       const accountDoc = await BankAccount.findById(accountId).session(session);
       if (!accountDoc) throw new Error('Source account not found');
 
-      
       if (String(accountDoc.userId) !== String(userId)) {
         throw new Error('Unauthorized for this account operations');
       }
@@ -35,7 +33,6 @@ const createTransaction = async (req, res) => {
       const normalizedType = type.toLowerCase();
       const reference = generateReference();
 
-    
       if (normalizedType === 'deposit') {
         accountDoc.balance = Number(accountDoc.balance) + numericAmount;
         await accountDoc.save({ session });
@@ -50,7 +47,6 @@ const createTransaction = async (req, res) => {
         });
         resultTxn = await txn.save({ session });
 
-    
       } else if (normalizedType === 'withdrawal') {
         if (Number(accountDoc.balance) < numericAmount) {
           throw new Error('Insufficient funds for withdrawal');
@@ -69,7 +65,6 @@ const createTransaction = async (req, res) => {
         });
         resultTxn = await txn.save({ session });
 
-     
       } else if (normalizedType === 'transfer') {
         if (!targetAccountNumber) {
           throw new Error('Target account number is required for transfers');
@@ -97,7 +92,6 @@ const createTransaction = async (req, res) => {
         await accountDoc.save({ session });
         await receiverAccount.save({ session });
 
-        
         const senderTxn = new Transaction({
           accountId: accountDoc._id,
           targetAccountId: receiverAccount._id,
@@ -109,7 +103,6 @@ const createTransaction = async (req, res) => {
         });
         await senderTxn.save({ session });
 
-      
         const receiverTxn = new Transaction({
           accountId: receiverAccount._id,
           type: 'deposit',
@@ -146,7 +139,7 @@ const loggedInUserTransactions = async (req, res) => {
 
     
     const transactions = await Transaction.find({ accountId: { $in: accountIds } })
-      .populate({ path: 'accountId', select: 'accountNumber currency balance' })
+      .populate('accountId', 'accountNumber currency balance')
       .sort({ createdAt: -1 });
 
     return res.status(200).json({ message: 'Transactions fetched successfully', data: transactions });
