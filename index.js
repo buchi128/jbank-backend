@@ -18,10 +18,10 @@ const apiRouter = require('./routes/apiRouter');
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-
+// Production CORS Setup
 const allowedOrigins = [
   'http://localhost:5173', 
-    'https://jbankplc-sv7e.vercel.app' 
+  'https://jbankplc-sv7e.vercel.app' 
 ];
 
 app.use(cors({
@@ -38,34 +38,33 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'] 
 }));
 
-
-let isConnected = false;
-
 const connectDB = async () => {
-  if (isConnected === 1) {
+  if (mongoose.connection.readyState === 1) {
     return;
   }
   
   if (!process.env.DATABASE_URI) {
-    console.error("CRITICAL CONFIG ERROR: DATABASE_URI is missing from Vercel settings.");
-    return;
+    throw new Error("CRITICAL CONFIG ERROR: DATABASE_URI is missing from Vercel settings.");
   }
   
-  try {
+
+  await mongoose.connect(process.env.DATABASE_URI, {
+    serverSelectionTimeoutMS: 5000, 
+    bufferCommands: false 
+  });
   
-    await mongoose.connect(process.env.DATABASE_URI);
-    isConnected = mongoose.connection.readyState; 
-    console.log("DATABASE connected successfully");
-  } catch (error) {
-    console.error("DATABASE connection failure:", error.message);
-  }
+  console.log("DATABASE connected successfully");
 };
 
 app.use(async (req, res, next) => {
-  await connectDB();
-  next();
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    console.error("DATABASE connection failure:", error.message);
+    return res.status(500).json({ error: "Database unavailable", details: error.message });
+  }
 });
-
 
 app.use("/", authRouter);          
 app.use("/api", authRouter);       
@@ -88,10 +87,4 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal Server Error', details: err.message });
 });
 
-
 module.exports = app;
-
-const PORT = process.env.PORT || 5000;
-if (process.env.NODE_ENV !== 'production') {
-  app.listen(PORT, () => console.log(`Server running locally on port ${PORT}`));
-}
