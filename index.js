@@ -18,7 +18,6 @@ const apiRouter = require('./routes/apiRouter');
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Production CORS Setup
 const allowedOrigins = [
   'http://localhost:5173', 
   'https://jbankplc-sv7e.vercel.app' 
@@ -75,6 +74,10 @@ app.use("/api/accounts", accountRouter);
 app.use("/api/transactions", transactionRouter); 
 app.use("/api/dashboard", dashboardRouter);
 app.use("/api/api", apiRouter);
+
+app.use("/transactions", transactionRouter);   
+app.use("/accounts", accountRouter);            
+
 
 
 app.use((req, res) => {

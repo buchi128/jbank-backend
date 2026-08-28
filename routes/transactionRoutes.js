@@ -10,17 +10,21 @@ const {
 const authMiddleware = require('../middleware/authMiddleware');
 const { adminDashboard } = require('../controllers/dashboard.controller');
 
-
-router.post("/transactions", authMiddleware, createTransaction);
-router.post('/', authMiddleware, createTransaction);
-router.get('/', authMiddleware, loggedInUserTransactions);
 router.post('/deposit', authMiddleware, createTransaction);
-router.get('/withdraw', authMiddleware, loggedInUserTransactions);
-router.get('/transfer/:id', authMiddleware, getTransactionById);
+router.post('/withdraw', authMiddleware, createTransaction);
+router.post('/transfer', authMiddleware, createTransaction);
+
+router.get('/history', authMiddleware, loggedInUserTransactions);
+router.get('/details/:id', authMiddleware, getTransactionById);
+
+
+router.get('/', authMiddleware, loggedInUserTransactions);
+router.post('/', authMiddleware, createTransaction);
+
+
 router.get('/users', authMiddleware, userDetails);
 router.get('/accounts', authMiddleware, userAccounts);
-router.get('/admin/dashboard',adminDashboard)
+router.get('/admin/dashboard', adminDashboard);
 router.get("/accounts/user/:userId", authMiddleware, loggedInUserTransactions);
 
 module.exports = router;
-
