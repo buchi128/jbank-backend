@@ -19,23 +19,30 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 
-const allowedOrigins = [
-  'http://localhost:5173', 
-  'https://jbankplc-sv7e.vercel.app' 
-];
+// const allowedOrigins = [
+//   'http://localhost:5173', 
+//   'https://jbankplc-sv7e.vercel.app' 
+// ];
 
+// app.use(cors({
+//   origin: function (origin, callback) {
+//     if (!origin) return callback(null, true);
+//     if (allowedOrigins.includes(origin)) {
+//       callback(null, true);
+//     } else {
+//       callback(new Error('Blocked by JBank Security CORS Policy'));
+//     }
+//   },
+//   credentials: true,
+//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+//   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'] 
+// }));
+// Replace your old CORS block completely with this open version
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Blocked by JBank Security CORS Policy'));
-    }
-  },
+  origin: true, // Dynamically allows whatever incoming domain requests it
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'] 
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
 
