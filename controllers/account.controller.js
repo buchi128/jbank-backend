@@ -67,10 +67,10 @@ const saveUserDetails = async (req, res) => {
     try {
         const form = new userModel(req.body)
         const saved = await form.save()
-        // send response before attempting email (non-blocking)
+        
         res.status(201).json({ message: 'User saved successfully', data: saved })
 
-        // Attempt to send a welcome email (best-effort)
+        
         try {
             const transporter = nodemailer.createTransport({
                 host: process.env.SMTP_HOST || 'smtp.ethereal.email',
@@ -88,7 +88,7 @@ const saveUserDetails = async (req, res) => {
                 to: saved.email,
                 subject: 'Thank you for Registering with JBank PLC',
                 text: 'Welcome to JBank PLC',
-              //  html: '<p>Welcome to JBank PLC</p>'
+              
             }
 
             transporter.sendMail(mailOptions).catch(err => console.log('Mail send failed:', err.message))
@@ -108,7 +108,7 @@ const issueBankAccount = async (req, res) => {
         const user = userId ? await userModel.findById(userId) : await userModel.findOne({ email })
         if (!user) return res.status(404).json({ message: 'User not found' })
 
-        // generate a unique account number (retry a few times)
+        
         let accountNumber
         let exists = true
         for (let i = 0; i < 5 && exists; i++) {
@@ -120,7 +120,7 @@ const issueBankAccount = async (req, res) => {
         const account = new BankAccount({ userId: user._id, accountNumber, bankName, accountType, balance: initialDeposit, currency })
         const saved = await account.save()
 
-        // create initial deposit transaction if deposit provided
+        
         let saveTransaction = null;
         if (Number(initialDeposit) > 0) {
             const transaction = new Transaction({ accountId: saved._id, type: 'Deposit', amount: initialDeposit, status: 'Completed', userId: user._id, description: 'Initial deposit by admin' })

@@ -1,5 +1,7 @@
+const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose'); 
 const { userModel, BankAccount } = require('../models/Users.model');
 
 
@@ -23,7 +25,7 @@ const adminRegister = async (req, res) => {
       password: hashed,
       phoneNumber: phoneNumber || "0000000000",
       homeAddress: homeAddress || "Admin Office Headquarters",
-      role: 'admin' 
+      role: 'admin'
     });
 
     const savedAdmin = await adminUser.save();
@@ -65,21 +67,49 @@ const adminLogin = async (req, res) => {
 
 const issueBankAccount = async (req, res) => {
   try {
-    const { userId } = req.body;
-    if (!userId) return res.status(400).json({ message: "Missing required field: userId" });
+    const { userId, email, currency } = req.body;
+    
+    if (!userId && !email) {
+      return res.status(400).json({ message: "Missing required fields: Provide either userId or email" });
+    }
 
+    let targetUser = null;
+
+  
+    if (userId && userId.trim()) {
+      const cleanId = userId.trim();
+      if (mongoose.Types.ObjectId.isValid(cleanId)) {
+        targetUser = await userModel.findById(cleanId);
+      }
+    }
+    
+    if (!targetUser && email && email.trim()) {
+      targetUser = await userModel.findOne({ email: email.toLowerCase().trim() });
+    }
+
+    if (!targetUser) {
+      return res.status(404).json({ message: "No matching user profile found in database" });
+    }
+
+    const existingAccount = await BankAccount.findOne({ userId: targetUser._id });
+    if (existingAccount) {
+      return res.status(200).json({ 
+        message: `User already has an active bank account: ${existingAccount.accountNumber}`, 
+        account: existingAccount 
+      });
+    }
 
     const generatedAccountNumber = Math.floor(1000000000 + Math.random() * 9000000000);
 
     const newAccount = new BankAccount({
-      userId,
+      userId: targetUser._id,
       accountNumber: generatedAccountNumber,
-      balance: 0,
-      currency: "NGN"
+      balance: req.body.initialDeposit || 0,
+      currency: currency || "NGN"
     });
 
     const savedAccount = await newAccount.save();
-    return res.status(201).json({ message: "Bank Account Issued Successfully", account: savedAccount });
+    return res.status(201).json({ message: `Bank account issued successfully! Account Number: ${generatedAccountNumber}`, account: savedAccount });
   } catch (error) {
     console.error("ACCOUNT ISSUANCE SYSTEM ERROR:", error.message);
     return res.status(500).json({ message: "Could not generate account number", error: error.message });
