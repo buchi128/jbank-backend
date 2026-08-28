@@ -41,7 +41,7 @@ const getUserAccount = async (req, res) => {
 
 const getUserTransactions = async (req, res) => {
     try {
-        // Transaction stores the account reference in `accountId`
+        
         const transactions = await Transaction.findOne().populate({ path: 'accountId', populate: { path: userId, select: 'accountNumber'} }) //'firstName lastName email'
         .sort({created:-1})
         .limit(50)
@@ -55,7 +55,7 @@ const getUserTransactions = async (req, res) => {
 
 const getAllUsers = async (req, res) => {
     try {
-        // Exclude password when returning users
+    
         const users = await userModel.find().select('-password')
         return res.status(200).json({ message: 'Users fetched successfully', data: users })
     } catch (error) {

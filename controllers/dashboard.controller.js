@@ -7,12 +7,10 @@ const adminDashboard = async (req, res) => {
     const totalAccounts = await BankAccount.countDocuments()
     const totalTransactions = await Transaction.countDocuments()
 
-    // const balanceAgg = await BankAccount.aggregate([
-    //   { $group: { _id: null, totalBalance: { $sum: '$balance' } } }
-    // ])
+   
      const accounts = await BankAccount.find()
     const totalBalance = accounts.reduce((sum, acc) => sum + Number(acc.balance || 0), 0)
-    // const totalBalance = (balanceAgg[0] && balanceAgg[0].totalBalance) || 0
+
     const recentUsers = await userModel.find().sort({ createdAt: -1 })
       .limit(5)
     //.select('-password').sort({ createdAt: -1 }).limit(5)
