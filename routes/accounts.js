@@ -1,12 +1,16 @@
 const express = require('express');
 const router = express.Router();
-const { BankAccount } = require('../models/Users.model');
 const { userAccounts, userAccountsId } = require('../controllers/transaction.controller');
+const { issueBankAccount } = require('../controllers/admin.controller');
+const authMiddleware = require('../middleware/authMiddleware');
 
-//GET all accounts (with user info populated)
-router.get('/accounts', userAccounts);
 
-//GET account by ID
-router.get('/:id', userAccountsId);
+
+router.post('/', authMiddleware, issueBankAccount);
+router.post('/create', authMiddleware, issueBankAccount);
+
+
+router.get('/', authMiddleware, userAccounts);       
+router.get('/:id', authMiddleware, userAccountsId); 
 
 module.exports = router;
