@@ -92,23 +92,25 @@ const createTransaction = async (req, res) => {
         await accountDoc.save({ session });
         await receiverAccount.save({ session });
 
+      
         const senderTxn = new Transaction({
           accountId: accountDoc._id,
           targetAccountId: receiverAccount._id,
           type: 'transfer',
           amount: numericAmount,
           description: description || `Transfer to Acct: ${targetAccountNumber}`,
-          reference,
+          reference: reference, 
           status: 'completed'
         });
         await senderTxn.save({ session });
 
+        
         const receiverTxn = new Transaction({
           accountId: receiverAccount._id,
           type: 'deposit',
           amount: numericAmount,
           description: `Transfer received from Acct: ${accountDoc.accountNumber}`,
-          reference,
+          reference: `${reference}-REC`, 
           status: 'completed'
         });
         await receiverTxn.save({ session });
