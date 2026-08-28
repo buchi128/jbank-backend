@@ -18,27 +18,18 @@ const apiRouter = require('./routes/apiRouter');
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Clean static validation array
 const allowedOrigins = [
   'http://localhost:5173', 
-  'https://jbankplc-sv7e.vercel.app' 
+  'https://jbankplc-sv7e.vercel.app'
 ];
 
 app.use(cors({
-  origin: function (origin, callback) {
-    
-    if (!origin) return callback(null, true);
-    
-  
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.error(`CORS Policy Blocked for domain: ${origin}`);
-      callback(new Error('Blocked by JBank Security CORS Policy'));
-    }
-  },
+  origin: allowedOrigins, 
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'] 
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  optionsSuccessStatus: 200
 }));
 
 const connectDB = async () => {
