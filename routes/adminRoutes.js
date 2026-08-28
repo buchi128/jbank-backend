@@ -15,7 +15,7 @@ router.get('/transactions', authMiddleware, requireRole('admin'), loggedInUserTr
 router.get('/dashboard', authMiddleware, requireRole('admin'), adminDashboard);
 
 
-router.post('/issue-bank-account', authMiddleware, requireRole('admin'), issueBankAccount);
-router.post('/accounts', authMiddleware, requireRole('admin'), issueBankAccount); 
+router.post('/issue-bank-account', authMiddleware, issueBankAccount);
+router.post('/accounts', authMiddleware, issueBankAccount); 
 
 module.exports = router;
